@@ -1,0 +1,33 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment variables file
+.env
+.env.*.local
+
+# Database related
+database/*.sqlite
+*.db
+
+# Knex migrations logs
+.knex/
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Build output
+di
