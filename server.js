@@ -3,6 +3,8 @@
 const Hapi = require("@hapi/hapi");
 const usersRoutes = require("./src/routes/users");
 const serverConfig = require("./config/server"); // config server terpisah
+const paymentMethodRoutes = require("./src/routes/payment_method");
+const product_category = require("./src/routes/product_category");
 
 const init = async () => {
   const server = Hapi.server({
@@ -13,7 +15,25 @@ const init = async () => {
 
   server.realm.modifiers.route.prefix = "/api";
 
+  server.ext("onPreResponse", (request, h) => {
+    const response = request.response;
+
+    if (response.isBoom) {
+      return h
+        .response({
+          statusCode: response.output.statusCode,
+          error: response.output.payload.error,
+          message: response.message,
+        })
+        .code(response.output.statusCode);
+    }
+
+    return h.continue;
+  });
+
   server.route(usersRoutes);
+  server.route(paymentMethodRoutes);
+  server.route(product_category);
 
   await server.start();
   console.log("Server running on %s", server.info.uri);

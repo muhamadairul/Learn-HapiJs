@@ -9,7 +9,7 @@
     "migrate:make": "knex migrate:make",
     "rollback": "knex migrate:rollback --knexfile knexfile.js",
     "seed": "knex seed:run --knexfile knexfile.js",
-    "seed:make": "knex seed:make"
+    "seed:make": "node seed-make.js"
   },
   "author": "rull",
   "license": "ISC",
