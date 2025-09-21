@@ -10,7 +10,7 @@ const init = async () => {
   const server = Hapi.server({
     port: serverConfig.port,
     host: serverConfig.host,
-    routes: serverConfig.routes, // kalau ada CORS, etc
+    routes: serverConfig.routes,
   });
 
   server.realm.modifiers.route.prefix = "/api";

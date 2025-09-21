@@ -7,7 +7,7 @@ exports.seed = async function (knex) {
   await knex("product_categories").del();
 
   await knex("product_categories").insert([
-    { name: "Makanan Berat", description: "Menu utama seperti nasi, mie, dll" },
+    { name: "Makanan", description: "Menu utama seperti nasi, mie, dll" },
     { name: "Minuman", description: "Aneka minuman dingin maupun panas" },
     { name: "Snack", description: "Cemilan ringan" },
     { name: "Dessert", description: "Hidangan penutup manis" },
