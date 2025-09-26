@@ -5,6 +5,7 @@ const usersRoutes = require("./src/routes/users");
 const serverConfig = require("./config/server"); // config server terpisah
 const paymentMethodRoutes = require("./src/routes/payment_method");
 const product_category = require("./src/routes/product_category");
+const product = require("./src/routes/product");
 
 const init = async () => {
   const server = Hapi.server({
@@ -34,6 +35,7 @@ const init = async () => {
   server.route(usersRoutes);
   server.route(paymentMethodRoutes);
   server.route(product_category);
+  server.route(product);
 
   await server.start();
   console.log("Server running on %s", server.info.uri);

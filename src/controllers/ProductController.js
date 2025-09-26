@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const ProductCategory = require("../models/ProductCategory");
 
 class ProductController {
   async index(request, h) {
@@ -15,15 +16,13 @@ class ProductController {
 
   async show(request, h) {
     const { id } = request.params;
-    const product = await Promise.all(
-      (
-        await Product.find(id)
-      ).map(async (product) => {
-        const prod_cat = await ProductCategory.find(product.category_id);
-        return { ...product, prod_cat };
-      })
-    )
-    return h.response(product);
+    const product = await Product.find(id);
+    if (!product) {
+      return h.response({ message: "Product not found" }).code(404);
+    }
+
+    const prod_cat = await ProductCategory.find(product.category_id);
+    return h.response({ ...product, prod_cat });
   }
 
   async store(request, h) {
@@ -36,7 +35,13 @@ class ProductController {
       }
 
       // create
-      const [newPay] = await Product.create({ name, description, category_id, price, stock });
+      const [newPay] = await Product.create({
+        name,
+        description,
+        category_id,
+        price,
+        stock,
+      });
       return h.response(newPay).code(201);
     } catch (err) {
       console.error("Error in store:", err); // log ke console
@@ -49,9 +54,14 @@ class ProductController {
   async update(request, h) {
     const { id } = request.params;
     const { name, description, category_id, price, stock } = request.payload;
-    const [updateMethod] = await Product.update(id, { name, description, category_id, price, stock });
-    if (!updateMethod)
-      return h.response({ message: "Product not found" }).code(404);
+    const [updateMethod] = await Product.update(id, {
+      name,
+      description,
+      category_id,
+      price,
+      stock,
+    });
+    if (!updateMethod) return h.response({ message: "Product not found" }).code(404);
     return h.response(updateMethod);
   }
 
