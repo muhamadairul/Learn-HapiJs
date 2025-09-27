@@ -1,50 +1,66 @@
-const Order = require("../models/Order");
-const Users = require("../models/Users");
+const Orders = require("../models/Orders");
 
 class OrderController {
   async index(request, h) {
-    const response = await Order.all();
-    const data = await Promise.all(
-      response.map(async (order) => {
-        const user = await Users.find(order.user_id);
-        const orderDetails = await Order.getOrderDetails(order.id);
-        order.details = orderDetails;
-        const orderPayments = await Order.getOrderPayments(order.id);
-        order.payments = orderPayments;
-        return { ...order, user };
-      })
-    );
-    return h.response(data);
+    const orders = await Orders.all();
+    return h.response(orders);
   }
 
   async show(request, h) {
     const { id } = request.params;
-    const order = await Order.find(id);
-    if (!order) return h.response({ message: "Order not found" }).code(404);
-    const user = await Users.find(order.user_id);
-    const orderDetails = await Order.getOrderDetails(order.id);
-    order.details = orderDetails;
-    const orderPayments = await Order.getOrderPayments(order.id);
-    order.payments = orderPayments;
-    return h.response({ ...order, user });
+    const order = await Orders.findWithDetails(id);
+
+    if (!order) {
+      return h.response({ message: "Order not found" }).code(404);
+    }
+    return h.response(order);
   }
 
   async store(request, h) {
-    const { user_id, total_amount, status } = request.payload;
-    if (!(await Users.find(user_id))) {
-      return h.response({ message: "User not found" }).code(400);
+    try {
+      const { user_id, total_amount, status, details } = request.payload;
+
+      const [order] = await Orders.create({
+        user_id,
+        total_amount,
+        status: status || "PENDING",
+      });
+
+      if (details && details.length > 0) {
+        for (const d of details) {
+          await Orders.addOrderDetail(order.id, d.product_id, d.quantity, d.price);
+        }
+      }
+
+      return h.response(order).code(201);
+    } catch (err) {
+      console.error("Error in store:", err);
+      return h
+        .response({ message: "Failed to create order", error: err.message })
+        .code(500);
     }
-    const [newOrder] = await Order.create({ user_id, total_amount, status });
-    return h.response(newOrder).code(201);
   }
 
-  async updateStatus(request, h) {
+  async update(request, h) {
     const { id } = request.params;
-    const { status } = request.payload;
-    const [updatedOrder] = await Order.update(id, { status });
-    if (!updatedOrder)
+    const { user_id, total_amount, status } = request.payload;
+
+    const [updated] = await Orders.update(id, { user_id, total_amount, status });
+
+    if (!updated) {
       return h.response({ message: "Order not found" }).code(404);
-    return h.response(updatedOrder);
+    }
+    return h.response(updated);
+  }
+
+  async destroy(request, h) {
+    const { id } = request.params;
+    const deleted = await Orders.delete(id);
+
+    if (!deleted) {
+      return h.response({ message: "Order not found" }).code(404);
+    }
+    return h.response({ message: "Order deleted successfully" });
   }
 }
 
