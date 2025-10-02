@@ -5,7 +5,9 @@
 exports.up = function(knex) {
   return knex.schema.createTable("carts", (table) => {
     table.increments("id").primary();
-    table.integer("products").unsigned().references("id").inTable("users").onDelete("CASCADE");
+    table.integer("product_id").unsigned().references("id").inTable("products").onDelete("CASCADE");
+    table.integer("quantity").notNullable().defaultTo(1);
+    table.bigInteger("total_amount").notNullable();
     table.timestamps(true, true);
   })
 };

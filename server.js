@@ -1,11 +1,14 @@
 "use strict";
 
 const Hapi = require("@hapi/hapi");
+const Inert = require("@hapi/inert");
+const Path = require("path");
 const usersRoutes = require("./src/routes/users");
-const serverConfig = require("./config/server"); // config server terpisah
+const serverConfig = require("./config/server");
 const paymentMethodRoutes = require("./src/routes/payment_method");
 const product_category = require("./src/routes/product_category");
 const product = require("./src/routes/product");
+const carts = require("./src/routes/carts");
 
 const init = async () => {
   const server = Hapi.server({
@@ -14,7 +17,21 @@ const init = async () => {
     routes: serverConfig.routes,
   });
 
+  await server.register(Inert);
+
   server.realm.modifiers.route.prefix = "/api";
+
+  server.route({
+    method: 'GET',
+    path: '/uploads/products/{param*}',
+    handler: {
+      directory: {
+        path: Path.join(__dirname, 'uploads', 'products'),
+        redirectToSlash: true,
+        index: false
+      }
+    }
+  });
 
   server.ext("onPreResponse", (request, h) => {
     const response = request.response;
@@ -36,11 +53,13 @@ const init = async () => {
   server.route(paymentMethodRoutes);
   server.route(product_category);
   server.route(product);
+  server.route(carts);
 
   await server.start();
   console.log("Server running on %s", server.info.uri);
   console.log("Server running on port %s", server.info.port);
   console.log("Server running on host %s", server.info.host);
+  console.log("Static files available at: %s/uploads/products/", server.info.uri);
   console.log("Click CTRL + C to stop the server");
 };
 

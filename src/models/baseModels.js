@@ -24,6 +24,10 @@ class BaseModel {
   async delete(id) {
     return db(this.table).where({ id }).del();
   }
+
+  query() {
+    return db.table(this.table);
+  }
 }
 
 module.exports = BaseModel;

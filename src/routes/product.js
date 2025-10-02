@@ -1,5 +1,8 @@
 const ProductController = require("../controllers/ProductController");
-const { createProductSchema, updateProductSchema } = require("../validations/productValidation");
+const {
+  createProductSchema,
+  updateProductSchema,
+} = require("../validations/productValidation");
 
 module.exports = [
   {
@@ -22,6 +25,13 @@ module.exports = [
           throw err;
         },
       },
+      payload: {
+        output: "stream",
+        parse: true,
+        multipart: true,
+        maxBytes: 10 * 1024 * 1024,
+        allow: "multipart/form-data",
+      },
     },
     handler: ProductController.store,
   },
@@ -34,6 +44,13 @@ module.exports = [
         failAction: (request, h, err) => {
           throw err;
         },
+      },
+      payload: {
+        output: "stream",
+        parse: true,
+        multipart: true,
+        maxBytes: 10 * 1024 * 1024,
+        allow: "multipart/form-data",
       },
     },
     handler: ProductController.update,

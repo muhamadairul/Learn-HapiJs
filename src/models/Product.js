@@ -1,7 +1,7 @@
 const db = require("../../config/db");
 const BaseModel = require("./baseModels");
 
-class ProductCategory extends BaseModel {
+class Product extends BaseModel {
   constructor() {
     super("products"); 
   }
@@ -15,4 +15,4 @@ class ProductCategory extends BaseModel {
   }
 }
 
-module.exports = new ProductCategory();
+module.exports = new Product();
