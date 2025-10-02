@@ -43,7 +43,7 @@ class CartController {
 
   async store(request, h) {
     try {
-      const { jumlah, total_harga, product } = request.payload;
+      const { quantity, total_amount, product } = request.payload;
 
       // Validasi input
       if (!product || !product.id) {
@@ -65,8 +65,8 @@ class CartController {
       // Create cart item
       const [newCartItem] = await Cart.create({
         product_id: product.id,
-        jumlah: jumlah || 1,
-        total_harga: total_harga || productExists.price,
+        quantity: quantity || 1,
+        total_amount: total_amount || productExists.price,
         created_at: new Date(),
         updated_at: new Date()
       });
@@ -85,7 +85,7 @@ class CartController {
   async update(request, h) {
     try {
       const { id } = request.params;
-      const { jumlah, total_harga, product } = request.payload;
+      const { quantity, total_amount, product } = request.payload;
 
       // Cek apakah cart item exists
       const existingCart = await Cart.find(id);
@@ -95,8 +95,8 @@ class CartController {
 
       // Update cart item
       const updatedCart = await Cart.update(id, {
-        jumlah,
-        total_harga,
+        quantity,
+        total_amount,
         updated_at: new Date()
       });
 

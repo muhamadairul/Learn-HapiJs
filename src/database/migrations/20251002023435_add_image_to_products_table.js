@@ -3,8 +3,8 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  knex.schema.table("products", (table) => {
-    table.string("image").after("stock");
+  return knex.schema.table("products", (table) => {
+    table.string("image").after("stock").nullable();
   })
 };
 
@@ -13,7 +13,7 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-  knex.schema.table("products", (table) => {
+  return knex.schema.table("products", (table) => {
     table.dropColumn("image");
   })
 };

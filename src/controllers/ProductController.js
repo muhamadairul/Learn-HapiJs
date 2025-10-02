@@ -3,6 +3,11 @@ const Product = require("../models/Product");
 const ProductCategory = require("../models/ProductCategory");
 const path = require("path");
 const fs = require("fs");
+const mime = require("mime-types");
+const {
+  createProductDataSchema,
+  updateProductDataSchema,
+} = require("../validations/productValidation");
 
 class ProductController {
   async index(request, h) {
@@ -66,60 +71,173 @@ class ProductController {
   }
 
   async store(request, h) {
+    let image = null;
+
     try {
       const { name, description, category_id, price, stock } = request.payload;
-      let image = null;
 
-      // Handle single image upload
+      const { error } = createProductDataSchema.validate({
+        name,
+        description,
+        category_id,
+        price,
+        stock,
+      });
+
+      if (error) {
+        return h
+          .response({
+            status: "error",
+            message: "Validation failed",
+            errors: error.details.map((detail) => detail.message),
+          })
+          .code(400);
+      }
+
       if (request.payload.image) {
         const uploadedImage = request.payload.image;
-        const filename = `${Date.now()}-${uploadedImage.filename}`;
+
+        const contentType =
+          uploadedImage.headers?.["content-type"] ||
+          uploadedImage.hapi?.headers?.["content-type"];
+
+        const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
+        if (!contentType || !allowedMimeTypes.includes(contentType)) {
+          return h
+            .response({
+              status: "error",
+              message: "Invalid file type",
+              error: `Only image files are allowed. Received: ${contentType}`,
+            })
+            .code(400);
+        }
+
+        const originalName = uploadedImage.filename || "image";
+        let fileExtension = path.extname(originalName).replace(".", "");
+
+        // Kalau tidak ada extension di filename → ambil dari content-type
+        if (!fileExtension) {
+          fileExtension = mime.extension(contentType) || "jpg";
+        }
+
+        const filename = `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 15)}.${fileExtension}`;
         const uploadPath = path.join(__dirname, "../../uploads/products", filename);
 
-        // Ensure upload directory exists
         const uploadDir = path.dirname(uploadPath);
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
 
-        // Save file
-        const fileStream = fs.createWriteStream(uploadPath);
-        await new Promise((resolve, reject) => {
-          uploadedImage.pipe(fileStream);
-          uploadedImage.on("end", resolve);
-          uploadedImage.on("error", reject);
-        });
+        try {
+          const fileStream = fs.createWriteStream(uploadPath);
 
-        image = `/uploads/products/${filename}`;
+          await new Promise((resolve, reject) => {
+            uploadedImage.pipe(fileStream);
+            uploadedImage.on("end", resolve);
+            uploadedImage.on("error", (err) => {
+              if (fs.existsSync(uploadPath)) {
+                fs.unlinkSync(uploadPath);
+              }
+              reject(err);
+            });
+            fileStream.on("error", (err) => {
+              if (fs.existsSync(uploadPath)) {
+                fs.unlinkSync(uploadPath);
+              }
+              reject(err);
+            });
+          });
+
+          image = `/uploads/products/${filename}`;
+          console.log("Image saved successfully:", image);
+        } catch (fileError) {
+          console.error("Error saving file:", fileError);
+          return h
+            .response({
+              status: "error",
+              message: "Failed to save image file",
+              error: fileError.message,
+            })
+            .code(500);
+        }
       }
 
-      // Check duplicate name
-      if (await Product.findByName(name)) {
-        // Hapus file yang sudah diupload jika ada duplikasi
+      const existingProduct = await Product.findByName(name);
+      if (existingProduct) {
         if (image) {
           const imagePath = path.join(__dirname, "../..", image);
           if (fs.existsSync(imagePath)) {
             fs.unlinkSync(imagePath);
           }
         }
-        return h.response({ message: "Product already exists" }).code(400);
+        return h
+          .response({
+            status: "error",
+            message: "Product with this name already exists",
+          })
+          .code(400);
       }
 
-      // Create product
+      const categoryExists = await ProductCategory.find(category_id);
+      if (!categoryExists) {
+        if (image) {
+          const imagePath = path.join(__dirname, "../..", image);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
+        }
+        return h
+          .response({
+            status: "error",
+            message: "Category not found",
+          })
+          .code(400);
+      }
+
       const [newProduct] = await Product.create({
-        name,
-        description,
+        name: name.trim(),
+        description: description ? description.trim() : null,
         category_id,
-        price,
-        stock,
-        image, // Simpan hanya 1 image
+        price: parseFloat(price),
+        stock: parseInt(stock),
+        image,
       });
 
-      return h.response(newProduct).code(201);
+      const productWithCategory = {
+        ...newProduct,
+        category_name: categoryExists.name,
+      };
+
+      return h
+        .response({
+          status: "success",
+          message: "Product created successfully",
+          data: productWithCategory,
+        })
+        .code(201);
     } catch (err) {
       console.error("Error in store:", err);
+
+      if (image) {
+        try {
+          const imagePath = path.join(__dirname, "../..", image);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
+        } catch (cleanupError) {
+          console.error("Error cleaning up image:", cleanupError);
+        }
+      }
+
       return h
-        .response({ message: "Failed to create product", error: err.message })
+        .response({
+          status: "error",
+          message: "Failed to create product",
+          error: err.message,
+        })
         .code(500);
     }
   }
@@ -128,10 +246,27 @@ class ProductController {
     const { id } = request.params;
     const { name, description, category_id, price, stock } = request.payload;
 
-    // Get current product data first
+    const { error } = updateProductDataSchema.validate({
+      name,
+      description,
+      category_id,
+      price,
+      stock,
+    });
+
+    if (error) {
+      return h
+        .response({
+          status: "error",
+          message: "Validation failed",
+          errors: error.details.map((detail) => detail.message),
+        })
+        .code(400);
+    }
+
     const currentProduct = await Product.find(id);
     if (!currentProduct) {
-      return h.response({ message: "Product not found" }).code(404);
+      return h.response({ status: "error", message: "Product not found" }).code(404);
     }
 
     let updateData = {
@@ -142,10 +277,35 @@ class ProductController {
       stock,
     };
 
-    // Handle image upload if provided
     if (request.payload.image) {
       const uploadedImage = request.payload.image;
-      const filename = `${Date.now()}-${uploadedImage.filename}`;
+
+      const contentType =
+        uploadedImage.headers?.["content-type"] ||
+        uploadedImage.hapi?.headers?.["content-type"];
+
+      const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
+      if (!contentType || !allowedMimeTypes.includes(contentType)) {
+        return h
+          .response({
+            status: "error",
+            message: "Invalid file type",
+            error: `Only image files are allowed. Received: ${contentType}`,
+          })
+          .code(400);
+      }
+
+      const originalName = uploadedImage.filename || "image";
+      let fileExtension = path.extname(originalName).replace(".", "");
+
+      if (!fileExtension) {
+        fileExtension = mime.extension(contentType) || "jpg";
+      }
+
+      const filename = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 15)}.${fileExtension}`;
       const uploadPath = path.join(__dirname, "../../uploads/products", filename);
 
       const uploadDir = path.dirname(uploadPath);
@@ -153,38 +313,71 @@ class ProductController {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
 
-      const fileStream = fs.createWriteStream(uploadPath);
-      await new Promise((resolve, reject) => {
-        uploadedImage.pipe(fileStream);
-        uploadedImage.on("end", resolve);
-        uploadedImage.on("error", reject);
-      });
+      try {
+        const fileStream = fs.createWriteStream(uploadPath);
 
-      // Hapus gambar lama jika ada
-      if (currentProduct.image) {
-        const oldImagePath = path.join(__dirname, "../..", currentProduct.image);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+        await new Promise((resolve, reject) => {
+          uploadedImage.pipe(fileStream);
+          uploadedImage.on("end", resolve);
+          uploadedImage.on("error", (err) => {
+            if (fs.existsSync(uploadPath)) {
+              fs.unlinkSync(uploadPath);
+            }
+            reject(err);
+          });
+          fileStream.on("error", (err) => {
+            if (fs.existsSync(uploadPath)) {
+              fs.unlinkSync(uploadPath);
+            }
+            reject(err);
+          });
+        });
+
+        if (currentProduct.image) {
+          const oldImagePath = path.join(__dirname, "../..", currentProduct.image);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
         }
-      }
 
-      updateData.image = `/uploads/products/${filename}`;
+        updateData.image = `/uploads/products/${filename}`;
+      } catch (fileError) {
+        console.error("Error saving file:", fileError);
+        return h
+          .response({
+            status: "error",
+            message: "Failed to save new image",
+            error: fileError.message,
+          })
+          .code(500);
+      }
     }
 
     const [updatedProduct] = await Product.update(id, updateData);
-    return h.response(updatedProduct);
+
+    const categoryExists = await ProductCategory.find(updatedProduct.category_id);
+    const productWithCategory = {
+      ...updatedProduct,
+      category_name: categoryExists ? categoryExists.name : null,
+    };
+
+    return h
+      .response({
+        status: "success",
+        message: "Product updated successfully",
+        data: productWithCategory,
+      })
+      .code(200);
   }
 
   async destroy(request, h) {
     const { id } = request.params;
 
-    // Get product first to delete associated image
     const product = await Product.find(id);
     if (!product) {
       return h.response({ message: "Product not found" }).code(404);
     }
 
-    // Delete image file if exists
     if (product.image) {
       const imagePath = path.join(__dirname, "../..", product.image);
       if (fs.existsSync(imagePath)) {
