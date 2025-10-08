@@ -9,6 +9,7 @@ const paymentMethodRoutes = require("./src/routes/payment_method");
 const product_category = require("./src/routes/product_category");
 const product = require("./src/routes/product");
 const carts = require("./src/routes/carts");
+const orders = require("./src/routes/orders");
 
 const init = async () => {
   const server = Hapi.server({
@@ -54,6 +55,7 @@ const init = async () => {
   server.route(product_category);
   server.route(product);
   server.route(carts);
+  server.route(orders);
 
   await server.start();
   console.log("Server running on %s", server.info.uri);

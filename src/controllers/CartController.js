@@ -43,7 +43,7 @@ class CartController {
 
   async store(request, h) {
     try {
-      const { quantity, total_amount, product } = request.payload;
+      const { quantity, product } = request.payload;
 
       // Validasi input
       if (!product || !product.id) {
@@ -61,7 +61,7 @@ class CartController {
       if (existingCart) {
         return h.response({ message: "Product already in cart" }).code(400);
       }
-
+      const total_amount = quantity ? quantity * productExists.price : productExists.price;
       // Create cart item
       const [newCartItem] = await Cart.create({
         product_id: product.id,
