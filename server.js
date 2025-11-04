@@ -63,11 +63,16 @@ const init = async () => {
   console.log("Server running on host %s", server.info.host);
   console.log("Static files available at: %s/uploads/products/", server.info.uri);
   console.log("Click CTRL + C to stop the server");
+  
+  Object.entries(server.registrations).forEach(([name, info]) => {
+    console.log(`🔌 Plugin aktif: ${name} (v${info.version})`);
+  });
 };
 
 process.on("unhandledRejection", (err) => {
   console.log(err);
   process.exit(1);
 });
+
 
 init();

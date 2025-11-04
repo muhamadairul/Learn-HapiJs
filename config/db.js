@@ -1,5 +1,5 @@
 const knex = require('knex');
-const knexConfig = require('../knexfile'); // arahkan sesuai struktur project
+const knexConfig = require('../knexfile'); 
 
 const db = knex(knexConfig.development);
 
