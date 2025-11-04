@@ -9,7 +9,8 @@
     "migrate:make": "knex migrate:make",
     "rollback": "knex migrate:rollback --knexfile knexfile.js",
     "seed": "knex seed:run --knexfile knexfile.js",
-    "seed:make": "node seed-make.js"
+    "seed:make": "node seed-make.js",
+    "image": "node scripts/downloadProductImages.js"
   },
   "author": "rull",
   "license": "ISC",
@@ -21,6 +22,7 @@
     "dotenv": "^17.2.2",
     "knex": "^3.1.0",
     "mime-types": "^3.0.1",
+    "node-fetch": "^3.3.2",
     "pg": "^8.16.3"
   },
   "devDependencies": {

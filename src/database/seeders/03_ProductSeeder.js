@@ -26,6 +26,7 @@ exports.seed = async function (knex) {
       price: 25000,
       stock: 20,
       category_id: categoryMap["Makanan"],
+      image: "/uploads/products/nasi-goreng-spesial.jpg"
     },
     {
       name: "Mie Ayam Bakso",
@@ -33,6 +34,7 @@ exports.seed = async function (knex) {
       price: 20000,
       stock: 15,
       category_id: categoryMap["Makanan"],
+      image: "/uploads/products/mie-ayam-bakso.jpg"
     },
     {
       name: "Ayam Geprek",
@@ -40,6 +42,7 @@ exports.seed = async function (knex) {
       price: 22000,
       stock: 18,
       category_id: categoryMap["Makanan"],
+      image: "/uploads/products/ayam-geprek.jpeg"
     },
     {
       name: "Sate Ayam",
@@ -47,6 +50,7 @@ exports.seed = async function (knex) {
       price: 30000,
       stock: 12,
       category_id: categoryMap["Makanan"],
+      image: "/uploads/products/sate-ayam.jpg"
     },
     {
       name: "Soto Ayam",
@@ -54,6 +58,7 @@ exports.seed = async function (knex) {
       price: 20000,
       stock: 10,
       category_id: categoryMap["Makanan"],
+      image: "/uploads/products/soto-ayam.jpg"
     },
 
     {
@@ -62,6 +67,7 @@ exports.seed = async function (knex) {
       price: 5000,
       stock: 50,
       category_id: categoryMap["Minuman"],
+      image: "/uploads/products/es-teh-manis.jpg"
     },
     {
       name: "Es Jeruk",
@@ -69,6 +75,7 @@ exports.seed = async function (knex) {
       price: 7000,
       stock: 40,
       category_id: categoryMap["Minuman"],
+      image: "/uploads/products/es-jeruk.webp"
     },
     {
       name: "Kopi Hitam",
@@ -76,6 +83,7 @@ exports.seed = async function (knex) {
       price: 8000,
       stock: 25,
       category_id: categoryMap["Minuman"],
+      image: "/uploads/products/kopi-hitam.jpg"
     },
     {
       name: "Cappuccino",
@@ -83,6 +91,7 @@ exports.seed = async function (knex) {
       price: 15000,
       stock: 15,
       category_id: categoryMap["Minuman"],
+      image: "/uploads/products/cappuccino.jpg"
     },
     {
       name: "Teh Tarik",
@@ -90,6 +99,7 @@ exports.seed = async function (knex) {
       price: 12000,
       stock: 20,
       category_id: categoryMap["Minuman"],
+      image: "/uploads/products/teh-tarik.jpg"
     },
 
     {
@@ -98,6 +108,7 @@ exports.seed = async function (knex) {
       price: 15000,
       stock: 30,
       category_id: categoryMap["Snack"],
+      image: "/uploads/products/kentang-goreng.jpg"
     },
     {
       name: "Pisang Goreng",
@@ -105,6 +116,7 @@ exports.seed = async function (knex) {
       price: 10000,
       stock: 25,
       category_id: categoryMap["Snack"],
+      image: "/uploads/products/pisang-goreng.jpg"
     },
     {
       name: "Tahu Crispy",
@@ -112,6 +124,7 @@ exports.seed = async function (knex) {
       price: 8000,
       stock: 20,
       category_id: categoryMap["Snack"],
+      image: "/uploads/products/tahu-crispy.jpg"
     },
     {
       name: "Risoles",
@@ -119,6 +132,7 @@ exports.seed = async function (knex) {
       price: 10000,
       stock: 15,
       category_id: categoryMap["Snack"],
+      image: "/uploads/products/risoles.jpg"
     },
     {
       name: "Bakwan Jagung",
@@ -126,6 +140,7 @@ exports.seed = async function (knex) {
       price: 8000,
       stock: 18,
       category_id: categoryMap["Snack"],
+      image: "/uploads/products/bakwan-jagung.jpeg"
     },
 
     {
@@ -134,6 +149,7 @@ exports.seed = async function (knex) {
       price: 12000,
       stock: 20,
       category_id: categoryMap["Dessert"],
+      image: "/uploads/products/es-krim-coklat.jpeg"
     },
     {
       name: "Puding Coklat",
@@ -141,6 +157,7 @@ exports.seed = async function (knex) {
       price: 10000,
       stock: 18,
       category_id: categoryMap["Dessert"],
+      image: "/uploads/products/puding-coklat.jpg"
     },
     {
       name: "Cheesecake",
@@ -148,6 +165,7 @@ exports.seed = async function (knex) {
       price: 20000,
       stock: 12,
       category_id: categoryMap["Dessert"],
+      image: "/uploads/products/cheesecake.jpg"
     },
     {
       name: "Pancake",
@@ -155,6 +173,7 @@ exports.seed = async function (knex) {
       price: 18000,
       stock: 15,
       category_id: categoryMap["Dessert"],
+      image: "/uploads/products/pancake.jpg"
     },
     {
       name: "Brownies",
@@ -162,6 +181,7 @@ exports.seed = async function (knex) {
       price: 15000,
       stock: 20,
       category_id: categoryMap["Dessert"],
+      image: "/uploads/products/brownies.jpg"
     },
   ]);
 };

@@ -36,6 +36,15 @@ class Orders extends BaseModel {
   async deleteOrderDetail(detailId) {
     return await db("order_details").where({ id: detailId }).del();
   }
+
+  static async findLastOrderToday() {
+    const today = new Date().toISOString().slice(0, 10);
+    const [rows] = await db.execute(
+      "SELECT * FROM orders WHERE DATE(created_at) = ? ORDER BY id DESC LIMIT 1",
+      [today]
+    );
+    return rows[0] || null;
+  }
 }
 
 module.exports = new Orders();

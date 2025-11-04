@@ -20,10 +20,12 @@ class OrderController {
     try {
       const { user_id, total_amount, status, details } = request.payload;
 
+      const orderCode = await generateOrderCode();
       const [order] = await Orders.create({
         user_id,
         total_amount,
         status: status || "PENDING",
+        code: orderCode
       });
 
       if (details && details.length > 0) {
@@ -61,6 +63,30 @@ class OrderController {
       return h.response({ message: "Order not found" }).code(404);
     }
     return h.response({ message: "Order deleted successfully" });
+  }
+}
+
+async function generateOrderCode() {
+  try {
+    const date = new Date();
+    const datePart = date.toISOString().slice(0, 10).replace(/-/g, "");
+
+    const lastOrder = await Orders.findLastOrderToday();
+    let sequence = 1;
+
+    if (lastOrder && lastOrder.order_code) {
+      const lastCode = lastOrder.order_code;
+      const lastSequence = parseInt(lastCode.split("/")[2]) || 0;
+      sequence = lastSequence + 1;
+    }
+
+    const sequencePart = sequence.toString().padStart(4, "0");
+
+    return `ORD/${datePart}/${sequencePart}`;
+  } catch (error) {
+    console.error("Error generating order code:", error);
+    const timestamp = Date.now().toString().slice(-6);
+    return `ORD/EMG/${timestamp}`;
   }
 }
 
